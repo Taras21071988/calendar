@@ -15,11 +15,26 @@ const HOUR_MARGIN_TOP = 15;
 
 export const WeeklyCalendar = () => {
   const [mondayDate, setMondayDate] = useState(getMonday);
+  const [events, setEvents] = useState([
+    { date: new Date(2023, 7, 9, 9), text: "first", howlong: 3 },
+    { date: new Date(2023, 7, 9, 10), text: "first", howlong: 1 },
+  ]);
+
   const hourNow = new Date().getHours();
   const minutesNow = new Date().getMinutes();
 
   const nextWeek = () => setMondayDate(addDateBy(mondayDate, 7));
   const prevWeek = () => setMondayDate(addDateBy(mondayDate, -7));
+
+  const onAddEvent = (date) => {
+    const text = prompt("text");
+    const from = prompt("from");
+    const to = prompt("to");
+
+    date.setHours(from);
+    // date.setMinutes(from);
+    setEvents((prev) => [...prev, { text, date, howlong: to - from }]);
+  };
 
   return (
     <>
@@ -44,10 +59,26 @@ export const WeeklyCalendar = () => {
           <HGrid cols={7}>
             {DAYS.map((day, index) => (
               <DayWrapper
+                onDoubleClick={() => onAddEvent(addDateBy(mondayDate, index))}
                 key={day}
                 istoday={areDatesSame(new Date(), addDateBy(mondayDate, index))}
               >
                 <p>{day}</p>
+                {events.map(
+                  (event) =>
+                    areDatesSame(addDateBy(mondayDate, index), event.date) && (
+                      <Event
+                        howlong={event.howlong}
+                        fromtop={
+                          event.date.getHours() * HOUR_HEIGHT +
+                          HOUR_HEIGHT / 2 +
+                          event.date.getMinutes() / 2
+                        }
+                      >
+                        {event.text}
+                      </Event>
+                    )
+                )}
               </DayWrapper>
             ))}
           </HGrid>
@@ -87,7 +118,8 @@ const VGrid = styled.div`
 `;
 const DayWrapper = styled.span`
   border: 1px solid red;
-  background: ${({ istoday }) => (istoday ? "#f2cee6" : "grey")};
+  display: relative;
+  background: ${({ istoday }) => (istoday ? "#97a198" : "#4d4a4a")};
 `;
 const Hour = styled.span`
   height: ${HOUR_HEIGHT}px;
@@ -112,4 +144,16 @@ const FlexBox = styled.div`
     display: flex;
     align-items: center;
   }
+`;
+
+const Event = styled.div`
+  position: relative;
+  top: ${({ fromtop }) => fromtop}px;
+  background: green;
+  height: ${({ howlong }) => howlong * HOUR_HEIGHT}px;
+  color: white;
+  margin: 0px 5px;
+  padding: 5px;
+  border-radius: 6px;
+  margin-top: -10px;
 `;
